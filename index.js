@@ -11,6 +11,7 @@ app.use((req, res, next) => {
 
 app.use(morgan('tiny'));
 app.use(express.json()); // parse JSON request bodies
+app.use(express.static('build')); // to use build of frontend
 
 morgan.token('postData', (req) => {
     if (req.method === 'POST') {
