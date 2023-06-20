@@ -19,6 +19,12 @@ const phonebookSchema = new mongoose.Schema({
   name: {
     type: String,
     minLength: 3,
+    validate: {
+      validator: function(v) {
+        return /^[a-zA-Z]+$/.test(v); 
+      },
+      message: props => `${props.value} is not a valid name, use only letters`
+    },
   },
   number: {
     type: String,
@@ -26,7 +32,7 @@ const phonebookSchema = new mongoose.Schema({
       validator: function(v) {
         return /^(\d{3}\s?\d{7})$/.test(v);
       },
-      message: props => `${props.value} is not a valid phone number, use 040 1234567!`
+      message: props => `${props.value} is not a valid phone number, use 040 1234567 or 0407437433!`
     },
   }
   //number: String
