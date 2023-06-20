@@ -53,7 +53,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
-  // missing name or number
+/*
   if (!body.name) {
     return response.status(400).json({
       error: 'name missing'
@@ -64,7 +64,8 @@ app.post('/api/persons', (request, response, next) => {
     return response.status(400).json({
       error: 'number missing'
     })
-  }
+  } */
+  
   // all data existing
   const person = new Person({
     name: body.name,
@@ -80,7 +81,7 @@ app.post('/api/persons', (request, response, next) => {
 app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
-  // missing name or number
+  /*
   if (!name) {
     return response.status(400).json({
       error: 'name missing'
@@ -92,6 +93,7 @@ app.put('/api/persons/:id', (request, response, next) => {
       error: 'number missing'
     })
   }
+  */
   // find and update
   Person.findByIdAndUpdate(
     request.params.id,
