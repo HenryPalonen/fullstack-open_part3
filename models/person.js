@@ -21,7 +21,7 @@ const phonebookSchema = new mongoose.Schema({
     minLength: 3,
     validate: {
       validator: function(v) {
-        return /^[a-zA-Z]+$/.test(v); 
+        return /^[a-zA-Z\s]+$/.test(v); // Allow letters and spaces
       },
       message: props => `${props.value} is not a valid name, use only letters`
     },
