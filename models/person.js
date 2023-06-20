@@ -16,7 +16,7 @@ mongoose.connect(url)
 
 // Data model
 const phonebookSchema = new mongoose.Schema({
-  name: {
+  /* name: {
     type: String,
     minLength: 3,
   },
@@ -28,7 +28,9 @@ const phonebookSchema = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valid phone number!`
     },
-  }
+  }*/
+  name: String,
+  number: String
 })
 
 phonebookSchema.set('toJSON', {
