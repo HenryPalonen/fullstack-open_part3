@@ -16,11 +16,11 @@ mongoose.connect(url)
 
 // Data model
 const phonebookSchema = new mongoose.Schema({
-  /* name: {
+  name: {
     type: String,
     minLength: 3,
   },
-  number: {
+  /*number: {
     type: String,
     validate: {
       validator: function(v) {
@@ -29,7 +29,6 @@ const phonebookSchema = new mongoose.Schema({
       message: props => `${props.value} is not a valid phone number!`
     },
   }*/
-  name: String,
   number: String
 })
 
