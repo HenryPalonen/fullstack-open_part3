@@ -1,92 +1,125 @@
-const express = require('express');
-const app = express();
-const morgan = require('morgan');
+require('dotenv').config()
+const express = require('express')
+const morgan = require('morgan')
+const cors = require('cors')
+const app = express()
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  next();
-});
+// Module imports
+const Person = require('./models/person')
 
-app.use(morgan('tiny'));
-app.use(express.json()); // parse JSON request bodies
-app.use(express.static('build')); // to use build of frontend
+// Middleware
+app.use(express.json())
+app.use(cors())
+app.use(express.static('build'))
+morgan.token('body', req => JSON.stringify(req.body))
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-morgan.token('postData', (req) => {
-    if (req.method === 'POST') {
-      return JSON.stringify(req.body);
-    }
-    return '';
-  });
-  
-// Morgan middleware konfiguroituna tiny-konfiguraatiolla ja käyttäen luotua 'postData' tokenia
-app.use(morgan(':method :url :status :response-time ms - :postData'));
-  
-let persons = [
-  { id: 1, name: 'Henry Palonen', number: '123-456789' },
-  { id: 2, name: 'Patrick Palonen', number: '123456789' },
-];
 
-app.get('/api/persons', (req, res) => {
-  res.json(persons);
-});
+/* info page */
+app.get('/info', (request, response, next) => {
+  Person.countDocuments({}).then(count => {
+    let info = `<p>Phonebook has info for ${count} people</p>`
+    info += new Date()
+    response.send(info)
+  }).catch(error => next(error))
+})
 
-app.get('/info', (req, res) => {
-    const currentTime = new Date().toLocaleString();
-    const personCount = persons.length;
-    const infoMessage = `Phonebook has info for ${personCount} people`;
-  
-    res.send(`<p>${currentTime}</p><p>${infoMessage}</p>`);
-  });
+/* get all persons */
+app.get('/api/persons', (request, response, next) => {
+  Person.find({}).then(persons => {
+    response.json(persons)
+  }).catch(error => next(error))
+})
 
-  app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const person = persons.find((person) => person.id === id);
-  
+/* get individual person */
+app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id).then(person => {
     if (person) {
-      res.json(person);
+      response.json(person)
     } else {
-      res.status(404).send('Person not found');
+      response.status(404).end()
     }
-  });
+  }).catch(error => next(error))
+})
 
-  app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id);
-    persons = persons.filter((person) => person.id !== id);
-    res.status(204).end();
-  });
+/* delete person */
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndRemove(request.params.id)
+    .then(() => {response.status(204).end()})
+    .catch(error => next(error))
+})
 
-  app.post("/api/persons", (request, response, next) => {
-    const body = request.body;
-  
-    // Check if name already exists in persons array
-    const personExists = persons.some((person) => person.name === body.name);
-  
-    if (personExists) {
-      return response.status(400).json({ error: 'Name already exists in the phonebook' });
-    }
-  
-    // New Object to Db
-    
-    const newPerson  ={
-      id: Math.floor(Math.random() * 1000),
-      name: body.name,
-      number: body.number,
-    };
-  
-    /*newPerson
-      .save()
-      .then(savedPerson => {
-        response.json(savedPerson);
-      })
-      .catch(error => next(error));*/
+/* add person */
+app.post('/api/persons', (request, response, next) => {
+  const body = request.body
 
-    persons.push(newPerson); // Add the new person to the persons array
-    response.json(newPerson);
-  });
-  
-  const PORT = 3001;
-  app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+  // missing name or number
+  if (!body.name) {
+    return response.status(400).json({
+      error: 'name missing'
+    })
+  }
+
+  if (!body.number) {
+    return response.status(400).json({
+      error: 'number missing'
+    })
+  }
+  // all data existing
+  const person = new Person({
+    name: body.name,
+    number: body.number,
+  })
+
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  }).catch(error => next(error))
+})
+
+/* Update an existing person */
+app.put('/api/persons/:id', (request, response, next) => {
+  const { name, number } = request.body
+
+  // missing name or number
+  if (!name) {
+    return response.status(400).json({
+      error: 'name missing'
+    })
+  }
+
+  if (!number) {
+    return response.status(400).json({
+      error: 'number missing'
+    })
+  }
+  // find and update
+  Person.findByIdAndUpdate(
+    request.params.id,
+    { name, number },
+    { new: true, runValidators: false, context: 'query' }).
+    then(result => {
+      response.json(result)
+    }).catch(error => next(error))
+})
+
+/* error handling */
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
+
+  next(error)
+}
+
+// add middleware for error handling to the end
+app.use(errorHandler)
+
+
+const PORT = process.env.PORT
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})

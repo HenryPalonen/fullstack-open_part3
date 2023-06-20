@@ -1,0 +1,2 @@
+//GET https://phonebook-41cw.onrender.com/api/persons
+GET http://localhost:3001/api/persons
