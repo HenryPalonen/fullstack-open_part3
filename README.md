@@ -2,7 +2,7 @@
 
 FULL STACK OPEN 2023, Helsinki University
 
-Part 3, phonebook
+Part 3, phonebook: backend and build of frontend
 
 Author: Henry Palonen
 
