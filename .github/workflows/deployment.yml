@@ -1,0 +1,29 @@
+name: PhoneBook deployement
+
+on:
+  push:
+    branches:
+      - secondary
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+  
+
+jobs:
+    install_n_build:
+      runs-on: ubuntu-20.04
+      steps:
+        - uses: actions/checkout@v3
+        - uses: actions/setup-node@v3
+          with:
+            node-version: '16'
+        - name: Install backend dependencies
+          run: npm install        
+        - name: Install frontend dependencies
+          run: cd frontend/ && npm install        
+        - name: Run linters
+          uses: wearerequired/lint-action@v2
+          with:
+            eslint: true                   
+        - name: Building
+          run: npm run build:ui
