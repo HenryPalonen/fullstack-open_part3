@@ -28,9 +28,6 @@ jobs:
             eslint_dir: frontend/src               
         - name: Building
           run: npm run build:ui
-    deploy_to_render:
-      runs-on: ubuntu-20.04
-      steps:
         - name: Deploy to Render
           if: github.ref == 'refs/heads/main' && github.event_name == 'push'
           run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
