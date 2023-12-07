@@ -27,3 +27,4 @@ jobs:
             eslint: true                   
         - name: Building
           run: npm run build:ui
+          
