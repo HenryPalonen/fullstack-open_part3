@@ -1,4 +1,4 @@
-name: PhoneBook deployement
+name: Deployment
 
 on:
   push:
