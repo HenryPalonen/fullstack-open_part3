@@ -30,10 +30,14 @@ const remove = (id) => {
 const update = (id, updatedPerson) => {
     return axios.put(`${baseUrl}/${id}`, updatedPerson).then(response => response.data);
   };
-  
+
+/* eslint-disable */
+
+
 export default { 
     getAll, 
     create, 
     remove,
     update
 };
+/* eslint-enable */
