@@ -1,5 +1,9 @@
 name: Deployment
 
+permissions:
+  contents: write
+  issues: write
+
 on:
   push:
     branches:
@@ -38,6 +42,18 @@ jobs:
           severity: info
           details: "Deployment of a new version was successful :white_check_mark:"
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+  tag_release:
+      needs: [install_n_build]
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      runs-on: ubuntu-20.04
+      steps:
+        - uses: actions/checkout@v3
+        - name: Bump version and push tag
+          uses: anothrNick/github-tag-action@1.55.0
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            DEFAULT_BUMP: patch
 
   post_deployment_tests:
     needs: [install_n_build]
