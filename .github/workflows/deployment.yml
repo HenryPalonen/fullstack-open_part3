@@ -71,3 +71,5 @@ jobs:
           severity: error
           details: "Build or deployment failed! Commit: ${{ github.sha }}"
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+          
