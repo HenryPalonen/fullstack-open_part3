@@ -62,7 +62,7 @@ jobs:
 
   failure_notification:
     if: failure()
-    needs: [install_n_build, tag_release]
+    needs: [install_n_build]
     runs-on: ubuntu-latest
     steps:
       - name: Notify Discord on Failure
@@ -72,4 +72,3 @@ jobs:
           details: "Build or deployment failed! Commit: ${{ github.sha }}"
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
 
-          
