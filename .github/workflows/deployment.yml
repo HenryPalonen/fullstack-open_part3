@@ -61,7 +61,7 @@ jobs:
 
   failure_notification:
     if: failure()
-    needs: [install_n_build, tag_release, post_deployment_tests]
+    needs: [install_n_build, tag_release]
     runs-on: ubuntu-latest
     steps:
       - name: Notify Discord on Failure
