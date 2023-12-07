@@ -7,29 +7,66 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize]
-  
 
 jobs:
-    install_n_build:
-      runs-on: ubuntu-20.04
-      steps:
-        - uses: actions/checkout@v3
-        - uses: actions/setup-node@v3
-          with:
-            node-version: '16'
-        - name: Install backend dependencies
-          run: npm install        
-        - name: Install frontend dependencies
-          run: cd frontend/ && npm install        
-        - name: Run linters
-          uses: wearerequired/lint-action@v2
-          with:
-            eslint: true    
-            eslint_dir: frontend/src               
-        - name: Building
-          run: npm run build:ui
-        - name: Deploy to Render
-          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-          run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
-        
+  install_n_build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: Install backend dependencies
+        run: npm install        
+      - name: Install frontend dependencies
+        run: cd frontend/ && npm install        
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          eslint: true    
+          eslint_dir: frontend/src               
+      - name: Building
+        run: npm run build:ui
+      - name: Deploy to Render
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+      - name: Notify Discord on Success
+        if: success()
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          details: "Deployment of a new version was successful :white_check_mark:"
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
 
+  tag_release:
+    needs: [install_n_build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.55.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+
+#  post_deployment_tests:
+#    needs: [install_n_build]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Check Health Endpoint
+#        run: curl -f https://phonebook-41cw.onrender.com/health
+#      - name: Check Version Endpoint
+#        run: curl -f https://phonebook-41cw.onrender.com/version
+
+  failure_notification:
+    if: failure()
+    needs: [install_n_build, tag_release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord on Failure
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: error
+          details: "Build or deployment failed! Commit: ${{ github.sha }}"
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
