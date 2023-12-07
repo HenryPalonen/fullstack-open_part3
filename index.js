@@ -52,19 +52,6 @@ app.delete('/api/persons/:id', (request, response, next) => {
 /* add person */
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
-
-/*
-  if (!body.name) {
-    return response.status(400).json({
-      error: 'name missing'
-    })
-  }
-
-  if (!body.number) {
-    return response.status(400).json({
-      error: 'number missing'
-    })
-  } */
   
   // all data existing
   const person = new Person({
@@ -81,19 +68,6 @@ app.post('/api/persons', (request, response, next) => {
 app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
-  /*
-  if (!name) {
-    return response.status(400).json({
-      error: 'name missing'
-    })
-  }
-
-  if (!number) {
-    return response.status(400).json({
-      error: 'number missing'
-    })
-  }
-  */
   // find and update
   Person.findByIdAndUpdate(
     request.params.id,
@@ -116,6 +90,11 @@ const errorHandler = (error, request, response, next) => {
 
   next(error)
 }
+
+/* Health check endpoint */
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
 
 // add middleware for error handling to the end
 app.use(errorHandler)
